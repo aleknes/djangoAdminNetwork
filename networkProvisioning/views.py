@@ -1,9 +1,10 @@
 import json
 
-from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseForbidden, JsonResponse
-from django.shortcuts import render
+from django.http import HttpResponseNotAllowed, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
 from networkProvisioning.scripts.actions import show_version
+
 
 # Create your views here.
 

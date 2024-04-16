@@ -9,16 +9,17 @@ async function getShowVersion(btn) {
     const hostName = btn.closest('tr').querySelector('[id$=hostname]').value
     const ipAddr = btn.closest('tr').querySelector('[id$=loopback_ip]').value
 
-    data = {
+    const data = {
         'action': 'showVersion',
         'args': [hostName, ipAddr],
     }
     const result = await getAction(data)
     alert('Under ser du resultatet av show_version-funksjonen som er definert i scripts.actions som da ble trigget ' +
-        'av å klikke på denne knappen : \n\n'+result.result)
+        'av å klikke på denne knappen : \n\n' + result.result)
 }
+
 async function getAction(data) {
-        const response = await fetch('/actions/', {
+    const response = await fetch('/actions/', {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

@@ -15,6 +15,7 @@ class SerialNumberAdmin(admin.ModelAdmin):
         'part_number',
     ]
 
+
 class DeviceAdmin(admin.ModelAdmin):
     list_display = [
         'hostname',
@@ -31,6 +32,7 @@ class DeviceAdmin(admin.ModelAdmin):
         'serial_number__number',
     ]
 
+
 @admin.register(Router)
 class RouterAdmin(DeviceAdmin):
     list_display = deepcopy(DeviceAdmin.list_display)
@@ -39,10 +41,12 @@ class RouterAdmin(DeviceAdmin):
         networkProvisioning.admin_actions.perform_some_action,
     ]
 
+
 @admin.register(Switch)
 class SwitchAdmin(DeviceAdmin):
     list_display = deepcopy(DeviceAdmin.list_display)
     list_display.insert(1, 'mgmt_ip')
+
 
 class DeviceAdminInline(admin.TabularInline):
     class Media:
@@ -50,14 +54,18 @@ class DeviceAdminInline(admin.TabularInline):
 
     extra = 0
     can_delete = False
-    def action(self, obj):
+
+    @staticmethod
+    def action(obj):
         return format_html('''
             <button type="button" onclick="getShowVersion(this);" class="btn btn-warning">Get Show Version</button>
         ''')
+
     readonly_fields = [
         'action',
         'provisioned',
     ]
+
 
 class RouterAdminInline(DeviceAdminInline):
     model = Router
@@ -68,6 +76,8 @@ class RouterAdminInline(DeviceAdminInline):
         'action',
         'provisioned'
     ]
+
+
 class SwitchAdminInline(DeviceAdminInline):
     model = Switch
     fields = [
@@ -77,6 +87,7 @@ class SwitchAdminInline(DeviceAdminInline):
         'action',
         'provisioned'
     ]
+
 
 @admin.register(Site)
 class SiteAdmin(admin.ModelAdmin):

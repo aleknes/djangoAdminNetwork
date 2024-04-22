@@ -4,7 +4,8 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 import networkProvisioning.admin_actions
-from networkProvisioning.models import Site, SerialNumber, Router, Switch
+from forms import LinkForm
+from networkProvisioning.models import Site, SerialNumber, Router, Switch, Link, DeviceModel
 
 
 # Register your models here.
@@ -12,7 +13,7 @@ from networkProvisioning.models import Site, SerialNumber, Router, Switch
 class SerialNumberAdmin(admin.ModelAdmin):
     list_display = [
         'number',
-        'part_number',
+        'device_model',
     ]
 
 
@@ -40,7 +41,10 @@ class RouterAdmin(DeviceAdmin):
     actions = [
         networkProvisioning.admin_actions.perform_some_action,
     ]
-
+    readonly_fields = [
+        'available_interfaces',
+        'configuration_url',
+    ]
 
 @admin.register(Switch)
 class SwitchAdmin(DeviceAdmin):
@@ -99,4 +103,24 @@ class SiteAdmin(admin.ModelAdmin):
     inlines = [
         RouterAdminInline,
         SwitchAdminInline,
+    ]
+
+@admin.register(Link)
+class LinkAdmin(admin.ModelAdmin):
+    list_display = [
+        'subnet',
+        'side_a',
+        'side_a_intf',
+        'side_b',
+        'side_b_intf',
+        'description',
+    ]
+
+    form = LinkForm
+@admin.register(DeviceModel)
+class DeviceModelAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'part_number',
+        'interface_numbers',
     ]

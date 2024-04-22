@@ -11,8 +11,8 @@ class LinkForm(forms.ModelForm):
 
         def set_interface_choices(_side):
             router, intf = getattr(self.instance, _side), getattr(self.instance, f'{_side}_intf')
-            intf_numbers = [(i, i) for i in router.available_interfaces]
-            intf_numbers += [(intf, intf)]
+            intf_numbers = [(intf, intf)]
+            intf_numbers += [(i, i) for i in router.available_interfaces]
 
             intf_prefixes = [(i, i) for i in router.serial_number.device_model.operating_system.interface_prefixes]
 

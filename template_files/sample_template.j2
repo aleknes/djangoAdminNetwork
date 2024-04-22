@@ -1,0 +1,139 @@
+service timestamps debug datetime msec
+service timestamps log datetime msec
+service call-home
+platform qfp utilization monitor load 80
+platform punt-keepalive disable-kernel-core
+platform console virtual
+platform hardware throughput level MB 50 
+!
+hostname {{hostname}}
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition 1
+ rd 1:1
+ route-target export 1:1
+ route-target import 1:1
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family ipv6
+ exit-address-family
+!
+vrf definition 2
+ rd 2:2
+ route-target export 2:2
+ route-target import 2:2
+ !
+ address-family ipv4
+ exit-address-family
+!
+enable secret dummy
+!
+aaa new-model
+!
+!
+aaa authentication login default local
+aaa authorization exec default local 
+!
+!
+!
+!
+!
+!
+aaa session-id common
+!
+ip vrf forwarding
+!
+!
+!
+!
+!
+!         
+!
+ip name-server 8.8.8.8
+no ip domain lookup
+ip trigger-authentication timeout 90 port 7500
+!
+!
+!
+login on-success log
+subscriber templating
+multilink bundle-name authenticated
+license boot level ax
+license smart transport callhome
+diagnostic bootup level minimal
+memory free low-watermark processor 71507
+!
+!
+spanning-tree extend system-id
+!
+username dummy privilege 15 secret dummy
+!
+redundancy
+!
+!
+!
+!
+!
+!
+cdp run
+!
+interface Loopback0
+ ip address {{loopback_ip}} 255.255.255.255
+ ip ospf 1 area 0
+!
+!
+{%- for link in links %}
+    {%- if link.side_a.hostname == hostname %}
+        interface {{ link.side_a_prefix }}{{ link.side_a_intf }}
+         description Link to {{ link.side_b.hostname }}
+         ip address {{ link.subnet[0] }} {{ link.netmask }}
+    {%- else %}
+        interface {{ link.side_b_prefix }}{{ link.side_b_intf }}
+         description Link to {{ link.side_a.hostname }}
+         ip address {{ link.subnet[1] }} {{ link.netmask }}
+    {%- endif %}
+     ip ospf 1 area 0
+     no shutdown
+    !
+{%- endfor %}
+!
+router ospf 1
+ router-id {{loopback_ip}}
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+control-plane
+!
+!
+line con 0
+ stopbits 1
+line vty 0 4
+ transport input ssh
+!         
+call-home
+ ! If contact email address in call-home is configured as sch-smart-licensing@cisco.com
+ ! the email address configured in Cisco Smart License Portal will be used as contact email address to send SCH notifications.
+ contact-email-addr sch-smart-licensing@cisco.com
+ source-interface GigabitEthernet2
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+netconf legacy
+netconf ssh
+!
+!
+!
+!
+!
+netconf-yang
+netconf-yang feature candidate-datastore
+restconf
+end

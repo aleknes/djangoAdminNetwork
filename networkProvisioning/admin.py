@@ -5,23 +5,35 @@ from django.utils.html import format_html
 
 import networkProvisioning.admin_actions
 from forms import LinkForm
-from networkProvisioning.models import Site, SerialNumber, Router, Switch, Link, DeviceModel
+from networkProvisioning.models import Site, SerialNumber, Router, Switch, Link, DeviceModel, Template, OperatingSystem, \
+    GenericDevice
+from networkProvisioning.util import Util
 
 
 # Register your models here.
 @admin.register(SerialNumber)
 class SerialNumberAdmin(admin.ModelAdmin):
+    @staticmethod
+    def assigned_to_device(obj):
+        return GenericDevice.objects.filter(serial_number=obj).first()
+
     list_display = [
         'number',
         'device_model',
+        'assigned_to_device'
     ]
 
 
 class DeviceAdmin(admin.ModelAdmin):
+    @staticmethod
+    def configuration_preview(obj):
+        return Util.build_configuration(obj)
+
     list_display = [
         'hostname',
         'site',
         'serial_number',
+        'template',
         'provisioned'
     ]
     readonly_fields = [
@@ -44,7 +56,9 @@ class RouterAdmin(DeviceAdmin):
     readonly_fields = [
         'available_interfaces',
         'configuration_url',
+        'configuration_preview',
     ]
+
 
 @admin.register(Switch)
 class SwitchAdmin(DeviceAdmin):
@@ -105,22 +119,48 @@ class SiteAdmin(admin.ModelAdmin):
         SwitchAdminInline,
     ]
 
+
 @admin.register(Link)
 class LinkAdmin(admin.ModelAdmin):
+    @staticmethod
+    def _side_a_intf(obj):
+        return f'{obj.side_a_prefix}{obj.side_a_intf}'
+
+    @staticmethod
+    def _side_b_intf(obj):
+        return f'{obj.side_b_prefix}{obj.side_b_intf}'
+
     list_display = [
+        'circuit_id',
         'subnet',
         'side_a',
-        'side_a_intf',
+        '_side_a_intf',
         'side_b',
-        'side_b_intf',
-        'description',
+        '_side_b_intf',
     ]
 
     form = LinkForm
+
+
 @admin.register(DeviceModel)
 class DeviceModelAdmin(admin.ModelAdmin):
     list_display = [
         'name',
         'part_number',
         'interface_numbers',
+    ]
+
+
+@admin.register(Template)
+class TemplateAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'template_file',
+    ]
+
+
+@admin.register(OperatingSystem)
+class OperatingSystemAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
     ]

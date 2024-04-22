@@ -33,7 +33,7 @@ class OverwriteStorage(FileSystemStorage):
 
 class Template(models.Model):
     name = models.CharField(max_length=255)
-    template_file = models.FileField(upload_to='template_files/', storage=OverwriteStorage())
+    template_file = models.FileField(upload_to='networkProvisioning/configuration_templates/', storage=OverwriteStorage())
 
     def __str__(self):
         return self.name
@@ -43,7 +43,7 @@ class GenericDevice(models.Model):
     hostname = models.CharField(max_length=255)
     serial_number = models.OneToOneField(SerialNumber, unique=True, on_delete=models.CASCADE)
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
-    template = models.ForeignKey(Template, on_delete=models.DO_NOTHING, null=True, blank=True)
+    template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True, blank=True, help_text='Select Template to view configuration')
     configuration_url = models.URLField(null=True, blank=True,
                                         help_text='WIP: Should be available on an UUID URL when finished')
     provisioned = models.BooleanField(null=True, blank=True, help_text='Automatically set based on ZTP status')

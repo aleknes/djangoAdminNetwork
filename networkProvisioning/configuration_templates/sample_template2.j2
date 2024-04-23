@@ -1,0 +1,49 @@
+
+!
+hostname {{hostname}}
+!
+enable secret dummy
+!
+aaa new-model
+!
+aaa authentication login default local
+aaa authorization exec default local 
+!
+ip name-server 8.8.8.8
+no ip domain lookup
+!
+username dummy privilege 15 secret dummy
+!
+interface Loopback0
+ ip address {{loopback_ip}} 255.255.255.255
+!
+{%- for link in links %}
+    {%- if link.side_a.hostname == hostname %}
+        interface {{ link.side_a_prefix }}{{ link.side_a_intf }}
+         description Link to {{ link.side_b.hostname }}
+         ip address {{ link.subnet[0] }} {{ link.netmask }}
+    {%- else %}
+        interface {{ link.side_b_prefix }}{{ link.side_b_intf }}
+         description Link to {{ link.side_a.hostname }}
+         ip address {{ link.subnet[1] }} {{ link.netmask }}
+    {%- endif %}
+     no shutdown
+    !
+{%- endfor %}
+!
+router ospf 1
+ router-id {{loopback_ip}}
+!
+!
+line con 0
+ stopbits 1
+line vty 0 4
+ transport input ssh
+!     
+netconf legacy
+netconf ssh
+!
+netconf-yang
+netconf-yang feature candidate-datastore
+restconf
+end

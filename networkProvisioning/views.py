@@ -1,12 +1,14 @@
 import json
-
+from django.conf import settings
+from django.http import HttpResponse, JsonResponse
+from django.views.generic import View
 from django.http import HttpResponseNotAllowed, HttpResponseForbidden, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from networkProvisioning.scripts.actions import show_version
+from networkProvisioning.util import Util
 
-
-# Create your views here.
+from .models import SerialNumber, GenericDevice
 
 @csrf_exempt
 def actions(request):
@@ -22,5 +24,26 @@ def actions(request):
             return JsonResponse({'result': result})
         else:
             return HttpResponseNotAllowed('Post Only')
+    else:
+        return HttpResponseForbidden('Nope, dont think so..')
+
+def getConfig(request):
+    if request.user.is_authenticated or settings.DEBUG:
+        if request.method == 'GET':
+            #AL: Temp PoC to generate config until UUID endpoint is implemented
+            config = ""
+            if 'sn' in request.GET:
+                serial_number = request.GET['sn']
+                device = GenericDevice.objects.filter(serial_number__number=serial_number).first()
+                if device:
+                    config = Util.build_configuration(device)
+                else:
+                    config = 'Device not found'
+            else:
+                config = 'No serial number provided'
+
+            return HttpResponse(config, content_type='text/plain')
+        else:
+            return HttpResponseNotAllowed('Get Only')
     else:
         return HttpResponseForbidden('Nope, dont think so..')

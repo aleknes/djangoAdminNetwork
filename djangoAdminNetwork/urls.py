@@ -18,14 +18,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
-from networkProvisioning.views import actions
+from networkProvisioning.views import actions, getConfig
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('actions/', actions),
+    path('getConfig', getConfig, name='getConfig'),
 ]
 
 
-#AL: Allow file download of template files directly from admin interface in debug mode. Probably bypassing logon
+
 if settings.DEBUG:
+    #AL: Allow file download of template files directly from admin interface in debug mode. Probably bypassing logon
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    #AL Temp PoC path to generate config until UUID endpoint is implemented. Not working for some reason
+    #urlpatterns.append(path('getConfig/', getConfig, name='getConfig'))

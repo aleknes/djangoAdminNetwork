@@ -119,7 +119,7 @@ class SiteAdmin(admin.ModelAdmin):
         SwitchAdminInline,
     ]
 
-@admin.register(NetworkConfiguratio n)
+@admin.register(NetworkConfiguration)
 class NetworkConfigurationAdmin(admin.ModelAdmin):
     list_display = [
         'name',

@@ -5,6 +5,8 @@ from django.db import models
 
 from networkProvisioning.util import Util
 
+from ipaddress import IPv4Network
+
 
 # Create your models here.
 class Site(models.Model):
@@ -14,7 +16,15 @@ class Site(models.Model):
 
     def __str__(self):
         return self.name
+    
 
+class NetworkConfiguration(models.Model):
+    name = models.CharField(max_length=255)
+    syslog_servers = models.JSONField(default=list)
+    ntp_servers = models.JSONField(default=list)
+
+    def __str__(self):
+        return self.name
 
 class SerialNumber(models.Model):
     number = models.CharField(max_length=255, unique=True)
@@ -48,7 +58,7 @@ class GenericDevice(models.Model):
     configuration_url = models.URLField(null=True, blank=True,
                                         help_text='WIP: Should be available on an UUID URL when finished')
     provisioned = models.BooleanField(null=True, blank=True, help_text='Automatically set based on ZTP status')
-
+    base_config = models.ForeignKey(NetworkConfiguration, on_delete=models.SET_NULL, null=True, blank=True)
     def __str__(self):
         return self.hostname
 
@@ -56,6 +66,21 @@ class GenericDevice(models.Model):
 class Router(GenericDevice):
     loopback_ip = models.GenericIPAddressField(unique=True, help_text='Implicit /32')
     available_interfaces = models.JSONField(help_text='Automatically generated/updated when saving router or link')
+
+
+    def getAllLinksLocal(self):
+        #Returns all links where the side_a is the local router
+        from networkProvisioning.models import Link
+        links = Link.objects.filter(side_a=self) | Link.objects.filter(side_b=self)
+        return_links = []
+        if links:
+            for link in links:
+                if link.side_a == self:
+                    return_links.append(link)
+                else:
+                    return_links.append(link.swap_sides())
+        return return_links
+
 
     def save(
             self, force_insert=False, force_update=False, using=None, update_fields=None
@@ -87,12 +112,30 @@ class Link(models.Model):
     side_a = models.ForeignKey(Router, related_name='side_a', on_delete=models.CASCADE)
     side_a_prefix = models.CharField(max_length=255, help_text=intf_help_text, null=True, blank=True)
     side_a_intf = models.CharField(max_length=255, help_text=intf_help_text, blank=True, null=True)
+    side_a_ipv4 = models.GenericIPAddressField(null=True, blank=True)  # Define as GenericIPAddressField
+
     side_b = models.ForeignKey(Router, related_name='side_b', on_delete=models.CASCADE)
     side_b_prefix = models.CharField(max_length=255, help_text=intf_help_text, null=True, blank=True)
     side_b_intf = models.CharField(max_length=255, help_text=intf_help_text, blank=True, null=True)
     circuit_id = models.CharField(max_length=255, blank=True, null=True)
+    side_b_ipv4 = models.GenericIPAddressField(null=True, blank=True)  # Define as GenericIPAddressField
     subnet = models.CharField(max_length=255, blank=True, null=True,
                               help_text='Automatically fetched from IPAM when saving')
+    subnet_mask = models.CharField(max_length=255, blank=True, null=True)  # Define as CharField
+
+
+    def swap_sides(self):
+        # Create a new instance of Link with side_a and side_b swapped
+        return Link(side_a=self.side_b,
+                    side_a_prefix=self.side_b_prefix,
+                    side_a_intf=self.side_b_intf,
+                    side_a_ipv4=self.side_b_ipv4,
+                    side_b=self.side_a,
+                    side_b_prefix=self.side_a_prefix,
+                    side_b_intf=self.side_a_intf,
+                    side_b_ipv4=self.side_a_ipv4,
+                    circuit_id=self.circuit_id,
+                    subnet=self.subnet)
 
     def __str__(self):
         return f'{self.side_a}:{self.side_a_intf} <-> {self.side_b}:{self.side_b_intf}'
@@ -101,6 +144,14 @@ class Link(models.Model):
             self, force_insert=False, force_update=False, using=None, update_fields=None
     ):
         Util.update_available_interfaces(self, 'remove')
+
+
+        if self.subnet:
+            subnet_obj = IPv4Network(self.subnet, strict=False)
+            self.side_a_ipv4 = str(list(subnet_obj.hosts())[0])  # Convert to string
+            self.side_b_ipv4 = str(list(subnet_obj.hosts())[1])  # Convert to string
+            self.subnet_mask = str(subnet_obj.netmask)  # Convert to string
+
         super().save(force_insert, force_update, using, update_fields)
 
     def delete(self, using=None, keep_parents=False):

@@ -1,4 +1,5 @@
 import json
+import pprint
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from django.views.generic import View
@@ -9,6 +10,7 @@ from networkProvisioning.scripts.actions import show_version
 from networkProvisioning.util import Util
 
 from .models import SerialNumber, Router
+
 
 @csrf_exempt
 def actions(request):
@@ -37,15 +39,15 @@ def getConfig(request):
                 device = Router.objects.filter(serial_number__number=serial_number).first()
                 print(type(device))
                 if device:
-                    config = Util.build_configuration(device)
+                    config = Util.build_configuration_alternate(device)
                 else:
                     config = 'Device not found'
             else:
                 config = 'No serial number provided'
             #AL: Trim leading whitespace
-            trimmed_conf = '\n'.join(line.lstrip() for line in config.splitlines())
+            #trimmed_conf = '\n'.join(line.lstrip() for line in config.splitlines())
 
-            return HttpResponse(trimmed_conf, content_type='text/plain')
+            return HttpResponse(config, content_type='text/plain')
         else:
             return HttpResponseNotAllowed('Get Only')
     else:

@@ -2,6 +2,7 @@ from ipaddress import IPv4Network
 
 from django.db.models import Q
 from jinja2 import Template
+import pprint
 
 class Util:
     @staticmethod
@@ -23,31 +24,36 @@ class Util:
 
             return Template(template).render(router_obj.__dict__)
 
-    #AL: Not sure how to handle .loopback_ip if a GenericDevice is passed instead of a Router object. Merge into single function later on.    
     @staticmethod
-    def build_router_configuration(router_obj):
-        print("hithere")
-        from networkProvisioning.models import Router
-        if not isinstance(router_obj, Router):
-            return 'Invalid object type'
+    def build_configuration_alternate(router_obj):
+        """Testing som changes to the build_configuration method"""
         if router_obj.template:
-            from networkProvisioning.models import Link
+            from networkProvisioning.models import Link, NetworkConfiguration
             template = router_obj.template.template_file.file.read().decode('utf-8')
 
-            # get links that belongs to me
-            link_filter = Q(side_a=router_obj) | Q(side_b=router_obj)
-            # just add link as property to router obj and use it as context
-            router_obj.links = Link.objects.filter(link_filter)
-            # generate a list of hosts from the link subnet
-            for link in router_obj.links:
-                if link.subnet:
-                    subnet = IPv4Network(link.subnet, strict=False)
-                    link.subnet = list(subnet.hosts())
-                    link.netmask = subnet.netmask
-            template = Template(template).render(router_obj.__dict__)
-            print(type(template))
-            return Template(template).render(router_obj.__dict__)
+            #Get links where I am side A. Must fix IP addresses problem
+            router_obj.links = router_obj.getAllLinksLocal()
+            links_data = []
 
+            for link in router_obj.getAllLinksLocal():
+                # Convert link object to a dictionary
+                link_dict = {
+                    field.name: getattr(link, field.name)
+                    for field in link._meta.fields
+                }
+                links_data.append(link_dict)  
+
+            router_obj.links = links_data
+            router_obj.location = router_obj.site.name
+            router_obj.ntp_servers = router_obj.base_config.ntp_servers
+            router_obj.syslog_servers = router_obj.base_config.syslog_servers
+
+            pprint.pprint(router_obj.__dict__)
+            return Template(template).render(router_obj.__dict__)
+        
+
+        
+        
     @staticmethod
     def update_available_interfaces(obj, action):
         for side in ['side_a', 'side_b']:

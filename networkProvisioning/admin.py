@@ -6,7 +6,7 @@ from django.utils.html import format_html
 import networkProvisioning.admin_actions
 from forms import LinkForm
 from networkProvisioning.models import Site, SerialNumber, Router, Switch, Link, DeviceModel, Template, OperatingSystem, \
-    GenericDevice
+    GenericDevice, NetworkConfiguration
 from networkProvisioning.util import Util
 
 
@@ -118,6 +118,15 @@ class SiteAdmin(admin.ModelAdmin):
         RouterAdminInline,
         SwitchAdminInline,
     ]
+
+@admin.register(NetworkConfiguratio n)
+class NetworkConfigurationAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'syslog_servers',
+        'ntp_servers',
+    ]
+
 
 
 @admin.register(Link)

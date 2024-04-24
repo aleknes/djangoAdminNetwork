@@ -41,6 +41,7 @@ class Template(models.Model):
 
 class GenericDevice(models.Model):
     hostname = models.CharField(max_length=255)
+    domain = models.CharField(max_length=20, blank=True, null=True)
     serial_number = models.OneToOneField(SerialNumber, unique=True, on_delete=models.CASCADE)
     site = models.ForeignKey(Site, on_delete=models.CASCADE)
     template = models.ForeignKey(Template, on_delete=models.SET_NULL, null=True, blank=True, help_text='Select Template to view configuration')
@@ -65,6 +66,14 @@ class Router(GenericDevice):
         Util.build_configuration(self)
         super().save(force_insert, force_update, using, update_fields)
 
+#AL: Added this for extra functionality, but ended up using hostname as metadata for logc in jinja templates. Can probably be removed.
+class TransportRouter(Router):
+    class Meta:
+        verbose_name = 'Transport Router'
+
+class CERouter(Router):
+    class Meta:
+        verbose_name = 'CE Router'
 
 class Switch(GenericDevice):
     class Meta:

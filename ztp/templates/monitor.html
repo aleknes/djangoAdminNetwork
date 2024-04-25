@@ -1,0 +1,35 @@
+<!-- monitor.html -->
+{% extends 'base.html' %}
+
+{% block content %}
+<h2><i class="fas fa-database"></i> Containers</h2>
+{% for container in docker_containers %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5 class="card-title">Name: {{ container.name }}</h5>
+            <p class="card-text">Status: {{ container.status }}</p>
+            <form method="post" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="container_id" value="{{ container.container_id }}">
+                <button type="submit" name="action" value="start" class="btn btn-success">
+                    <i class="fas fa-play"></i> Start
+                </button>
+                <button type="submit" name="action" value="stop" class="btn btn-danger">
+                    <i class="fas fa-stop"></i> Stop
+                </button>
+            </form>
+            <!-- Fixed-height log box -->
+            <div class="form-group mt-3">
+                <label for="log-{{ container.container_id }}">Logs:</label>
+                <textarea class="form-control" id="log-{{ container.container_id }}" rows="5" readonly style="resize: none;">
+                    {% if container.logs %}
+                        {{ container.logs }}
+                    {% else %}
+                        No logs available.
+                    {% endif %}
+                </textarea>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+{% endblock %}

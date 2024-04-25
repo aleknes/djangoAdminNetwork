@@ -19,11 +19,13 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from networkProvisioning.views import actions, getConfig
+from ztp.views import monitor_docker_containers
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('actions/', actions),
     path('getConfig', getConfig, name='getConfig'),
+    path('ztp/', monitor_docker_containers, name='monitor_docker_containers')
 ]
 
 

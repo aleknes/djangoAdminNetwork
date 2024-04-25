@@ -9,7 +9,16 @@ from networkProvisioning.models import Site, SerialNumber, Router, Switch, Link,
     GenericDevice, NetworkConfiguration
 from networkProvisioning.util import Util
 
+from ztp.models import DockerContainer
 
+
+@admin.register(DockerContainer)
+class DockerContainerAdmin(admin.ModelAdmin):
+    list_display = [
+        'name',
+        'container_id',
+        'image',
+    ]
 # Register your models here.
 @admin.register(SerialNumber)
 class SerialNumberAdmin(admin.ModelAdmin):
@@ -147,9 +156,7 @@ class LinkAdmin(admin.ModelAdmin):
         'side_b',
         '_side_b_intf',
     ]
-
     form = LinkForm
-
 
 @admin.register(DeviceModel)
 class DeviceModelAdmin(admin.ModelAdmin):

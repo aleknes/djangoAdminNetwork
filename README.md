@@ -42,3 +42,7 @@ You'll see three models/db tables available under NetworkProvisioning: `Routers`
 
 What's important to note is that normally you'd only have to enter `Site` to view `Routers` and `Switches` as well. These models are so called inlines to the Site model. Inside these inlines is where you probably would want to have actions available to users in form of buttons, dropdowns and such. A sample action button for this can be found inside Sites -> testsite1 -> Routers
 
+## Note about ZTP
+Ensure that the account running django process has access to docker.
+
+sudo usermod -aG docker <user> should work

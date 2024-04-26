@@ -1,10 +1,10 @@
 <!-- monitor.html -->
-{% extends 'admin/base_site.html' %}
+{% extends 'base.html' %}
 
 {% block content %}
 <h2><i class="fas fa-database"></i> Containers</h2>
 {% for container in docker_containers %}
-    <div class="card" style="height: 500px;width:1000px">
+    <div class="card mb-3">
         <div class="card-body">
             <h5 class="card-title">Name: {{ container.name }}</h5>
             <p class="card-text">Status: {{ container.status }}</p>
@@ -21,7 +21,7 @@
             <!-- Fixed-height log box -->
             <div class="form-group mt-3">
                 <label for="log-{{ container.container_id }}">Logs:</label>
-                <textarea class="form-control" id="log-{{ container.container_id }}" rows="12" readonly style="resize: none;">
+                <textarea class="form-control" id="log-{{ container.container_id }}" rows="5" readonly style="resize: none;">
                     {% if container.logs %}
                         {{ container.logs }}
                     {% else %}

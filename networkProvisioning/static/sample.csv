@@ -1,0 +1,5 @@
+hostname,serial,model,loopback_ip,domain,site_name,template_name
+router01,TEST123,C9500-40X,192.168.1.1,example.com,testsite1,Basic Setup
+router02,TEST221,C9500-40X,192.168.1.2,example.com,testsite2,Advanced Setup
+router03,TEST300,C9500-FAKE,192.168.1.3,example.com,testsite3,Basic Setup
+router04,TEST444,C9500-40X,192.168.1.3,example.com,testsite3,Basic Setup

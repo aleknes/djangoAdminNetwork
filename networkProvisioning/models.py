@@ -61,6 +61,8 @@ class GenericDevice(models.Model):
                                         help_text='WIP: Should be available on an UUID URL when finished')
     provisioned = models.BooleanField(null=True, blank=True, help_text='Automatically set based on ZTP status')
     base_config = models.ForeignKey(NetworkConfiguration, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    ztp_enable = models.BooleanField(default=False, help_text='Enable ZTP for this device (allows download of configuration for SN without authentication)')
     def __str__(self):
         return self.hostname
 
@@ -74,7 +76,7 @@ class Router(GenericDevice):
         from networkProvisioning.models import Link
         links = Link.objects.filter(side_a=self) | Link.objects.filter(side_b=self)
         return_links = []
-        print(f"Links getlinkslocal : {links}")
+
         if links:
             for link in links:
                 if link.side_a == self:

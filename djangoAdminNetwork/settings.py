@@ -142,3 +142,21 @@ LOGGING = {
         },
     },
 }
+JAZZMIN_SETTINGS = {
+    "custom_links": {
+        "ztp": [
+            {"name": "ZTP Monitor", "url": "../ztp/", "icon": "fa fa-link"},
+        ]
+    },
+
+        "topmenu_links": [
+
+        # Url that gets reversed (Permissions can be added)
+        {"name": "Home",  "url": "admin:index", "permissions": ["auth.view_user"]},
+
+        # external url that opens in a new window (Permissions can be added)
+        {"name": "Support", "url": "https://github.com/bentole/djangoAdminNetwork/issues", "new_window": True},
+
+
+    ],
+}

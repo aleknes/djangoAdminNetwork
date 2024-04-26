@@ -1,10 +1,12 @@
 from django.shortcuts import render, redirect
 from docker import DockerClient
 from .models import DockerContainer
+from django.views.decorators.csrf import csrf_exempt
+docker_client = DockerClient.from_env()
+
 
 def monitor_docker_containers(request):
     # Connect to the Docker daemon
-    docker_client = DockerClient.from_env()
 
     # Get all Docker containers from the model
     docker_containers = DockerContainer.objects.all()
@@ -50,3 +52,30 @@ def monitor_docker_containers(request):
 
     # Render the monitor template with the Docker containers
     return render(request, 'monitor.html', {'docker_containers': docker_containers})
+
+
+from django.http import JsonResponse
+import json
+
+@csrf_exempt
+def fetch_logs(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+
+        container_id = request.POST.get('container_id')
+        try:
+            docker_container = docker_client.containers.get(container_id)
+            logs = docker_container.logs(tail=50, timestamps=True).decode('utf-8')
+            # Get the last stored logs
+            last_logs = DockerContainer.objects.get(container_id=container_id).logs
+            # Find new logs
+            new_logs = logs if last_logs is None else logs[len(last_logs):]
+            print ('new logs : ' + new_logs)
+            # Update logs in the database
+            DockerContainer.objects.filter(container_id=container_id).update(logs=logs)
+
+            # Return new logs
+            return JsonResponse({'logs': new_logs})
+        except Exception as e:
+            print(f"Error fetching logs for container {container_id}: {e}")
+
+    return JsonResponse({'logs': ''})

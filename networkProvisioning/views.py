@@ -78,7 +78,8 @@ def upload_router_data(request):
 
             #Iterate over all the rows in the CSV file (obviously :-)
             for row in reader:
-                hostname, serial, model, loopback_ip, domain, site_name, template_name = row
+                print(f"Row: {row}")
+                hostname, serial, model, loopback_ip, domain, site_name = row
 
                 if Router.objects.filter(hostname=hostname).exists():
                     print(f"Router with hostname {hostname} already exists. Continuing to next row.")
@@ -87,8 +88,9 @@ def upload_router_data(request):
                     print(f"Serial number {serial} already exists. Continuing to next row.")
                     continue
                 if not DeviceModel.objects.filter(part_number=model).exists():
-                    print(f"Model {model} not found. Continuing to next row.")
+                    print(f"Model {model} not found. Skipping row for now...")
                     continue
+
                 if not Site.objects.filter(name=site_name).exists():
                     print(f"Site {site_name} not found. Adding")
                     

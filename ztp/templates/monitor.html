@@ -1,6 +1,39 @@
-<!-- monitor.html -->
 {% extends 'admin/base_site.html' %}
+{% block extrahead %}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            // Function to fetch updated logs via Ajax
+            function fetchUpdatedLogs(containerId) {
+                $.ajax({
+                    url: '/fetch_logs/',
+                    method: 'POST',
+                    data: {
+                        container_id: containerId
+                    },
+                    success: function(data) {
+                        // Check if there are new logs
+                        if (data.logs.trim().length > 0) {
+                            // Append new logs to the textarea
+                            var $logTextArea = $('#log-' + containerId);
+                            $logTextArea.append(data.logs);
+                            // Scroll to the bottom
+                            $logTextArea.scrollTop($logTextArea[0].scrollHeight);
+                        }
+                    
+                    }
+                });
+            }
 
+            // Refresh logs every 5 seconds
+            setInterval(function(){
+                {% for container in docker_containers %}
+                    fetchUpdatedLogs('{{ container.container_id }}');
+                {% endfor %}
+            }, 5000);
+        });
+    </script>
+{% endblock %}
 {% block content %}
 <h2><i class="fas fa-database"></i> Containers</h2>
 {% for container in docker_containers %}

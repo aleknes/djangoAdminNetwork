@@ -19,14 +19,16 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import path
 from networkProvisioning.views import actions, getConfig, upload_router_data
-from ztp.views import monitor_docker_containers
+from ztp.views import monitor_docker_containers, fetch_logs
 
 urlpatterns = [
+    #path('', admin.site.urls),
     path('admin/', admin.site.urls),
     path('actions/', actions),
     path('getConfig', getConfig, name='getConfig'),
     path('ztp/', monitor_docker_containers, name='monitor_docker_containers'),
-    path('upload/', upload_router_data, name='upload_router_data'  )
+    path('upload/', upload_router_data, name='upload_router_data'  ),
+    path('fetch_logs/', fetch_logs, name='fetch_logs')
 ]
 
 

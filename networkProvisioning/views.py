@@ -73,13 +73,15 @@ def upload_router_data(request):
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
             file_in_memory = request.FILES['file'].read().decode('utf-8')
-            reader = csv.reader(file_in_memory.splitlines())
-            next(reader)  # Skip the header row
+            reader = csv.reader(file_in_memory.splitlines(), delimiter=';')
+
+
+            print("next: ", next(reader)) # Skip the header row
 
             #Iterate over all the rows in the CSV file (obviously :-)
             for row in reader:
                 print(f"Row: {row}")
-                hostname, serial, model, loopback_ip, domain, site_name = row
+                site_name, loopback_ip, domain, hostname, serial, model = row
 
                 if Router.objects.filter(hostname=hostname).exists():
                     print(f"Router with hostname {hostname} already exists. Continuing to next row.")
